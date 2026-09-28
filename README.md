@@ -4,8 +4,8 @@ Build and check **full, reduced and custom systems** for match-result prediction
 with exact counts and hit statistics for systems of any size, without generating a single line until you
 ask to see them.
 
-> **Status:** early. The first game is **MatchX**; LOTTO, KENO and "My Games" (any pick-K-of-N game,
-> defined by you) are next.
+> **Status:** early. Games: **MatchX**, **LOTTO** and **KENO**; "My Games" (any pick-K-of-N game,
+> defined by you) is next.
 
 ## MatchX
 
@@ -32,6 +32,16 @@ every group -- computed from the systems, not by scanning lines. Then list the l
 hits.
 
 See [docs/matchx.md](docs/matchx.md) for the details and examples.
+
+## LOTTO and KENO
+
+Number games: **LOTTO** (6 from 1-49 by default, both adjustable) and **KENO** (1-12 spots from 1-80, 20
+drawn). Build a slip of entries -- **Single** lines, full **Systems**, **Groups** (A × B × …) and
+**Wheels** (reduced systems: *if at least G of the drawn numbers are among yours, some line has at least G
+hits*). Check a draw with your own prize per number of hits, see the exact odds, and find where any line is
+among all lines of the game.
+
+See [docs/lotto-keno.md](docs/lotto-keno.md).
 
 ## Run it
 
@@ -65,10 +75,13 @@ the whole ticket; the web app remembers your ticket in the browser and can save/
   hit histograms), the covering guarantee checked exhaustively, and tickets combining groups.
 - `tools/verify/verify_matchx.py` -- end-to-end against a running server: random tickets (all systems,
   all markets, several tickets), every built line, every check, compared with an independent brute force.
+- `tools/verify/verify_pick.py` -- the same for LOTTO, KENO and other N / k / draw settings: every entry
+  type, checks with prizes, show lines, wheel guarantees and line positions.
 
 ```bash
 cd server && mvn test
 python3 tools/verify/verify_matchx.py --url http://localhost:8090
+python3 tools/verify/verify_pick.py --url http://localhost:8090
 ```
 
 ## API
@@ -94,6 +107,28 @@ A request body:
       {"type": "covering", "matches": [5, 6], "picks": [["1", "X"], ["2", "X"]], "radius": 1, "guarantee": 2}
     ]
   }]
+}
+```
+
+Number games (`game` = `{numbers, pick, draw}` -- LOTTO `{49, 6, 6}`, KENO `{80, spots, 20}`):
+
+| Endpoint | |
+|---|---|
+| `POST /api/pick/count` | `{game, entries}` → `{total, entries:[{type, count}]}` |
+| `POST /api/pick/build` | → `{id, total, perEntry}` |
+| `POST /api/pick/check` | `+ drawn, payouts?` → `{total, histogram, entries:[{histogram}], payout?}` |
+| `POST /api/pick/check-lines` | `+ drawn, minHits, exact` → `{id, total}` |
+| `POST /api/pick/position` | `{game, lines:["1 2 3 4 5 6"], pool?}` → `{total, rows:[{line, rank}]}` |
+
+```json
+{
+  "game": {"numbers": 49, "pick": 6, "draw": 6},
+  "entries": [
+    {"type": "single", "numbers": [3, 11, 17, 25, 38, 44]},
+    {"type": "system", "numbers": [1, 2, 3, 4, 5, 6, 7, 8]},
+    {"type": "groups", "groups": [[1, 2, 3, 4], [20, 21, 22, 23, 24]], "take": [2, 4]},
+    {"type": "wheel",  "numbers": [1, 5, 9, 13, 17, 21, 25, 29, 33, 37], "guarantee": 3}
+  ]
 }
 ```
 

@@ -1,4 +1,4 @@
-package io.wheellab.matchx;
+package io.wheellab.core;
 
 /** Hit histograms: {@code hist[h]} = number of lines with exactly {@code h} hits. */
 public final class Histograms {

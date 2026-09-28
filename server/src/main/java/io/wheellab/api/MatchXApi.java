@@ -5,7 +5,7 @@ import com.google.gson.JsonObject;
 import io.wheellab.core.Checks;
 import io.wheellab.core.LineSource;
 import io.wheellab.matchx.Group;
-import io.wheellab.matchx.Histograms;
+import io.wheellab.core.Histograms;
 import io.wheellab.matchx.MatchX;
 import io.wheellab.matchx.Ticket;
 

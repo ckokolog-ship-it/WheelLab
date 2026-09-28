@@ -21,7 +21,7 @@ jobs:
           cache: maven
       - name: Unit tests (brute force)
         working-directory: server
-        run: mvn -B -ntp verify
+        run: ./mvnw -B -ntp verify
 
   web:
     name: Web lint and build
@@ -55,7 +55,7 @@ jobs:
           python-version: "3.11"
       - name: Build the server
         working-directory: server
-        run: mvn -B -ntp -DskipTests package
+        run: ./mvnw -B -ntp -DskipTests package
       - name: Start the server
         run: |
           java -jar server/target/wheellab-server.jar --port 8090 > server.log 2>&1 &

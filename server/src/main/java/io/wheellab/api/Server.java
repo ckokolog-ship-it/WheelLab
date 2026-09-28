@@ -55,6 +55,12 @@ public final class Server {
         post("/api/matchx/build", matchx::build);
         post("/api/matchx/check", matchx::check);
         post("/api/matchx/check-lines", matchx::checkLines);
+        PickApi pick = new PickApi(store);
+        post("/api/pick/count", pick::count);
+        post("/api/pick/build", pick::build);
+        post("/api/pick/check", pick::check);
+        post("/api/pick/check-lines", pick::checkLines);
+        post("/api/pick/position", pick::position);
         if (web != null) http.createContext("/", ex -> serveFile(ex, web));
     }
 

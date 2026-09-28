@@ -1,6 +1,7 @@
 package io.wheellab.matchx;
 
 import io.wheellab.core.Checks;
+import io.wheellab.core.Histograms;
 import io.wheellab.core.LineSource;
 
 import java.util.Arrays;

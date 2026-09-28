@@ -27,3 +27,10 @@ export const matchxBuild = (body) => post("/api/matchx/build", body);
 export const matchxCheck = (body, result) => post("/api/matchx/check", { ...body, result });
 export const matchxCheckLines = (body, result, minHits, exact) =>
   post("/api/matchx/check-lines", { ...body, result, minHits, exact });
+
+// Number games (LOTTO, KENO): {game: {numbers, pick, draw}, entries: [...]}
+export const pickCount = (body) => post("/api/pick/count", body);
+export const pickBuild = (body) => post("/api/pick/build", body);
+export const pickCheck = (body, drawn, payouts) => post("/api/pick/check", { ...body, drawn, ...(payouts ? { payouts } : {}) });
+export const pickCheckLines = (body, drawn, minHits, exact) => post("/api/pick/check-lines", { ...body, drawn, minHits, exact });
+export const pickPosition = (game, lines, pool) => post("/api/pick/position", { game, lines, ...(pool?.length ? { pool } : {}) });

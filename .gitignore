@@ -1,0 +1,16 @@
+# build output
+server/target/
+web/dist/
+web/node_modules/
+
+# local settings and secrets -- never commit
+.env
+.env.*
+*.local
+
+# editors / OS
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db

@@ -1,0 +1,27 @@
+WheelLab
+Copyright (c) 2026 ckokolog-ship-it. All rights reserved.
+
+1. Owner. WheelLab -- its source code, binaries, documentation, tests, verification tools and every other
+   file in this repository, except the third-party material in section 4 -- is owned by ckokolog-ship-it
+   ("the Owner").
+
+2. Restrictions. Without the Owner's prior written permission, no one may:
+   (a) copy, modify, or create derivative works of the software;
+   (b) distribute, publish, sell, rent, sublicense, or otherwise transfer it to third parties;
+   (c) offer it to third parties as a service (for example a website or an API);
+   (d) remove or alter this license or any copyright notice.
+   Viewing the source code where it is published does not grant any right of use.
+
+3. No warranty. The software is provided "as is", without warranty of any kind, express or implied,
+   including fitness for a particular purpose, accuracy, or freedom from errors. The Owner is not liable
+   for any damage arising from its use. The software computes combinations, systems and probabilities; it
+   does NOT predict results and does NOT guarantee or promise any winnings. Any participation in games of
+   chance is the player's own responsibility, subject to the law where they live and to the rules of each
+   operator. The software is not affiliated with, sponsored, or endorsed by any lottery or betting
+   operator.
+
+4. Third-party material. The open-source libraries used by the software are under their own licenses --
+   see THIRD_PARTY_NOTICES.md. They are not covered by this license.
+
+5. Permission. For permission to use, copy, or distribute the software, contact the Owner via GitHub
+   (https://github.com/ckokolog-ship-it).

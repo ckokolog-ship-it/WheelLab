@@ -1,160 +1,73 @@
 # WheelLab
 
-Build and check **full, reduced and custom systems** for match-result predictions and number games --
-with exact counts and hit statistics for systems of any size, without generating a single line until you
-ask to see them.
+[![CI](https://github.com/ckokolog-ship-it/WheelLab/actions/workflows/ci.yml/badge.svg)](https://github.com/ckokolog-ship-it/WheelLab/actions/workflows/ci.yml)
 
-> **Status:** early. Games: **MatchX**, **LOTTO**, **KENO** and **My Games** (number games you define).
+Build and check **full, reduced and custom systems** for match-result predictions and number games -- with
+exact counts and hit statistics for systems of any size, without generating a single line until you ask to
+see them.
 
-## MatchX
-
-Predict the outcome of up to 20 matches. Each match is played on one market:
-
-| Market | Outcomes |
+| Game | What you do |
 |---|---|
-| 1 X 2 | home win, draw, away win |
-| Under / Over | `U`, `O` |
-| GG / NG | both teams score, not both |
+| **MatchX** | predict up to 20 matches (1 X 2, Under/Over, GG/NG) with Full, Errors, Ranges and Covering systems |
+| **LOTTO** | 6 from 1-49 (adjustable): single lines, systems, groups and wheels |
+| **KENO** | 1-12 spots from 1-80, 20 drawn |
+| **My Games** | number games you define -- any range, pick and draw, an optional bonus pool, and a text language |
 
-A **ticket** splits the matches into **groups**; each group has its own system, and the ticket's lines are
-every combination of its groups' lines. Several tickets can be combined.
+In every game: **Check** a result instantly (hit tables for systems of any size, with your own prizes),
+list the lines with a given number of hits, see the exact **odds**, **analyse** systems (odd/even, last
+digit, frequencies) and find the **position** of any line.
 
-| System | What it plays |
-|---|---|
-| **Full** | every combination of the outcomes you pick |
-| **Errors** | your prediction (first pick of each match), with exactly *e* wrong matches for each *e* you choose |
-| **Ranges** | picks in order of preference; limit how many matches take their 1st, 2nd and 3rd choice |
-| **Covering** | a reduced system: *if at most R matches differ from your prediction, some line has at least G hits* |
-
-**Check** a result: the number of lines with each number of hits comes out instantly, for every ticket and
-every group -- computed from the systems, not by scanning lines. Then list the lines with (at least) *h*
-hits.
-
-See [docs/matchx.md](docs/matchx.md) for the details and examples.
-
-## LOTTO and KENO
-
-Number games: **LOTTO** (6 from 1-49 by default, both adjustable) and **KENO** (1-12 spots from 1-80, 20
-drawn). Build a slip of entries -- **Single** lines, full **Systems**, **Groups** (A × B × …) and
-**Wheels** (reduced systems: *if at least G of the drawn numbers are among yours, some line has at least G
-hits*). Check a draw with your own prize per number of hits, see the exact odds, and find where any line is
-among all lines of the game.
-
-See [docs/lotto-keno.md](docs/lotto-keno.md).
-
-## My Games
-
-Number games you define: numbers from-to, how many per line, how many are drawn, and optionally a second
-pool (bonus, stars, …). Play them like LOTTO and KENO, with prizes per main + bonus hits, **analyses**
-(odd/even and last digit of a system, number frequencies -- in every number game), and a **game language**
-that describes a whole game as text:
-
-```
-game "Star 5" numbers 1-50 pick 5 draw 5
-bonus "Star" numbers 1-12 pick 2 draw 2
-prize 5+2 = 1000000
-entry system 3 8 15 22 29 36 43 | 2 7 11
-```
-
-See [docs/my-games.md](docs/my-games.md).
-
-## Run it
+## Quick start
 
 Requirements: Java 17+, Maven 3.9+, Node.js 20+.
 
 ```bash
-# server (API on http://localhost:8090)
-cd server
-mvn package
-java -jar target/wheellab-server.jar
-
-# web app (development, http://localhost:5173 -- /api is proxied to the server)
-cd web
-npm install
-npm run dev
+cd web && npm install && npm run build
+cd ../server && mvn package
+java -jar target/wheellab-server.jar --web ../web/dist      # open http://localhost:8090
 ```
 
-To serve the built web app from the server itself:
+For development, run the server (`java -jar target/wheellab-server.jar`, API on port 8090) and the web app
+with hot reload (`cd web && npm run dev`, http://localhost:5173 -- `/api` is proxied to the server).
+
+Server options: `--port N` (or `WHEELLAB_PORT`), `--web DIR`. The server keeps no user data; the web app
+remembers your tickets and games in the browser and saves them as JSON (or text) files.
+
+## Documentation
+
+| Guide | |
+|---|---|
+| [MatchX](docs/matchx.md) | tickets, groups, the four systems, check |
+| [LOTTO and KENO](docs/lotto-keno.md) | entries, wheels, prizes, odds, position |
+| [My Games](docs/my-games.md) | your own games, bonus pools, the game language, analyses |
+| [How it works](docs/how-it-works.md) | lazy lines, formulas instead of scanning, proved reduced systems |
+| [API reference](docs/api.md) | every endpoint, with request examples |
+
+## Verified
+
+Every count, line and hit table is checked against an independent brute force -- JUnit tests in
+`server/src/test`, and end-to-end scripts in `tools/verify` that compare a running server with enumeration
+written separately in Python. CI runs all of them on every pull request.
 
 ```bash
-cd web && npm run build
-cd ../server && java -jar target/wheellab-server.jar --web ../web/dist   # http://localhost:8090
-```
-
-Options: `--port N` (or `WHEELLAB_PORT`), `--web DIR`. The server keeps no user data -- every request carries
-the whole ticket; the web app remembers your ticket in the browser and can save/open it as a JSON file.
-
-## How it is verified
-
-- `server/src/test` -- every system type against a plain enumeration of all combinations (lines, counts,
-  hit histograms), the covering guarantee checked exhaustively, and tickets combining groups.
-- `tools/verify/verify_matchx.py` -- end-to-end against a running server: random tickets (all systems,
-  all markets, several tickets), every built line, every check, compared with an independent brute force.
-- `tools/verify/verify_pick.py` -- the same for LOTTO, KENO and your own games (any range, a bonus pool):
-  every entry type, checks with prizes, show lines, wheel guarantees, line positions, analyses, frequencies
-  and the game language.
-
-```bash
-cd server && mvn test
+cd server && mvn verify
 python3 tools/verify/verify_matchx.py --url http://localhost:8090
 python3 tools/verify/verify_pick.py --url http://localhost:8090
 ```
 
-## API
+## Project layout
 
-| Endpoint | |
-|---|---|
-| `GET /api/health` | `{status, app}` |
-| `POST /api/matchx/count` | `{matches, tickets}` → `{total, tickets:[{total, uncovered, groups:[{type, matches, count}]}]}` |
-| `POST /api/matchx/build` | → `{id, total, perTicket}` -- read the lines with `/api/lines` |
-| `GET /api/lines?id=&start=&size=` | a page of lines (up to 1000): `{total, start, lines}` |
-| `POST /api/matchx/check` | `+ result` → `{total, histogram, tickets:[{histogram, groups:[..]}]}` |
-| `POST /api/matchx/check-lines` | `+ result, minHits, exact` → `{id, total}` |
-
-A request body:
-
-```json
-{
-  "matches": 6,
-  "tickets": [{
-    "groups": [
-      {"type": "full",     "matches": [1, 2], "picks": [["1", "X"], ["U", "O"]]},
-      {"type": "errors",   "matches": [3, 4], "picks": [["1", "X", "2"], ["GG", "NG"]], "errors": [0, 1]},
-      {"type": "covering", "matches": [5, 6], "picks": [["1", "X"], ["2", "X"]], "radius": 1, "guarantee": 2}
-    ]
-  }]
-}
+```
+server/        Java engine and API (io.wheellab.core, .matchx, .pick, .api)
+web/           React app (src/matchx, src/pick, src/components)
+tools/verify/  end-to-end verification scripts
+docs/          guides
 ```
 
-Number games -- `game` is `{numbers, pick, draw}` (LOTTO `{49, 6, 6}`, KENO `{80, spots, 20}`) or
-`{title, min, max, pick, draw, bonus?: {label, min, max, pick, draw}}`; entries take `"bonus": [..]` in games
-with a bonus pool:
+## Contributing
 
-| Endpoint | |
-|---|---|
-| `POST /api/pick/count` | `{game, entries}` → `{total, entries:[{type, count}]}` |
-| `POST /api/pick/build` | → `{id, total, perEntry}` |
-| `POST /api/pick/check` | `+ drawn, drawnBonus?, payouts?` → `{total, histogram, grid?, entries:[{histogram, grid?}], payout?}` -- `payouts[h]` or `payouts[h][s]` |
-| `POST /api/pick/check-lines` | `+ drawn, drawnBonus?, minHits, exact, minBonus?` → `{id, total}` |
-| `POST /api/pick/position` | `{game, lines:["1 2 3 4 5 6"], pool?, bonusPool?}` → `{total, rows:[{line, rank}]}` (bonus after `|`) |
-| `POST /api/pick/analysis` | `{game, entries, entry}` (a System entry) → `{total, oddEven, lastDigit}` |
-| `POST /api/pick/frequency` | `{game, entries}` → `{total, main:[{number, count}], bonus}` |
-| `POST /api/pick/parse` | `{text}` → `{game, entries, prizes}` (game language; errors name the line) |
-| `POST /api/pick/text` | `{game, entries, prizes?}` → `{text}` |
-
-```json
-{
-  "game": {"numbers": 49, "pick": 6, "draw": 6},
-  "entries": [
-    {"type": "single", "numbers": [3, 11, 17, 25, 38, 44]},
-    {"type": "system", "numbers": [1, 2, 3, 4, 5, 6, 7, 8]},
-    {"type": "groups", "groups": [[1, 2, 3, 4], [20, 21, 22, 23, 24]], "take": [2, 4]},
-    {"type": "wheel",  "numbers": [1, 5, 9, 13, 17, 21, 25, 29, 33, 37], "guarantee": 3}
-  ]
-}
-```
-
-Errors return HTTP 400 with `{"error": "a message meant for the user"}`.
+WheelLab is published so it can be read and tried; it is not open source (see the license). Bug reports and
+suggestions are welcome as GitHub issues. Pull requests cannot be accepted at the moment.
 
 ## Disclaimer
 

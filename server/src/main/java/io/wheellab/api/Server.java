@@ -61,6 +61,10 @@ public final class Server {
         post("/api/pick/check", pick::check);
         post("/api/pick/check-lines", pick::checkLines);
         post("/api/pick/position", pick::position);
+        post("/api/pick/analysis", pick::analysis);
+        post("/api/pick/frequency", pick::frequency);
+        post("/api/pick/parse", pick::parse);
+        post("/api/pick/text", pick::text);
         if (web != null) http.createContext("/", ex -> serveFile(ex, web));
     }
 

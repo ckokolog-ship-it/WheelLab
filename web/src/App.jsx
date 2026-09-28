@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { health } from "./api";
 import MatchXScreen from "./matchx/MatchXScreen";
+import MyGamesScreen from "./pick/MyGamesScreen";
 import PickScreen from "./pick/PickScreen";
 
 const LOTTO = {
@@ -36,6 +37,7 @@ const GAMES = [
   { id: "matchx", label: "MatchX", Screen: MatchXScreen },
   { id: "lotto", label: "LOTTO", Screen: LottoScreen },
   { id: "keno", label: "KENO", Screen: KenoScreen },
+  { id: "mygames", label: "My Games", Screen: MyGamesScreen },
 ];
 
 export default function App() {

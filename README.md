@@ -4,8 +4,7 @@ Build and check **full, reduced and custom systems** for match-result prediction
 with exact counts and hit statistics for systems of any size, without generating a single line until you
 ask to see them.
 
-> **Status:** early. Games: **MatchX**, **LOTTO** and **KENO**; "My Games" (any pick-K-of-N game,
-> defined by you) is next.
+> **Status:** early. Games: **MatchX**, **LOTTO**, **KENO** and **My Games** (number games you define).
 
 ## MatchX
 
@@ -43,6 +42,22 @@ among all lines of the game.
 
 See [docs/lotto-keno.md](docs/lotto-keno.md).
 
+## My Games
+
+Number games you define: numbers from-to, how many per line, how many are drawn, and optionally a second
+pool (bonus, stars, …). Play them like LOTTO and KENO, with prizes per main + bonus hits, **analyses**
+(odd/even and last digit of a system, number frequencies -- in every number game), and a **game language**
+that describes a whole game as text:
+
+```
+game "Star 5" numbers 1-50 pick 5 draw 5
+bonus "Star" numbers 1-12 pick 2 draw 2
+prize 5+2 = 1000000
+entry system 3 8 15 22 29 36 43 | 2 7 11
+```
+
+See [docs/my-games.md](docs/my-games.md).
+
 ## Run it
 
 Requirements: Java 17+, Maven 3.9+, Node.js 20+.
@@ -75,8 +90,9 @@ the whole ticket; the web app remembers your ticket in the browser and can save/
   hit histograms), the covering guarantee checked exhaustively, and tickets combining groups.
 - `tools/verify/verify_matchx.py` -- end-to-end against a running server: random tickets (all systems,
   all markets, several tickets), every built line, every check, compared with an independent brute force.
-- `tools/verify/verify_pick.py` -- the same for LOTTO, KENO and other N / k / draw settings: every entry
-  type, checks with prizes, show lines, wheel guarantees and line positions.
+- `tools/verify/verify_pick.py` -- the same for LOTTO, KENO and your own games (any range, a bonus pool):
+  every entry type, checks with prizes, show lines, wheel guarantees, line positions, analyses, frequencies
+  and the game language.
 
 ```bash
 cd server && mvn test
@@ -110,15 +126,21 @@ A request body:
 }
 ```
 
-Number games (`game` = `{numbers, pick, draw}` -- LOTTO `{49, 6, 6}`, KENO `{80, spots, 20}`):
+Number games -- `game` is `{numbers, pick, draw}` (LOTTO `{49, 6, 6}`, KENO `{80, spots, 20}`) or
+`{title, min, max, pick, draw, bonus?: {label, min, max, pick, draw}}`; entries take `"bonus": [..]` in games
+with a bonus pool:
 
 | Endpoint | |
 |---|---|
 | `POST /api/pick/count` | `{game, entries}` → `{total, entries:[{type, count}]}` |
 | `POST /api/pick/build` | → `{id, total, perEntry}` |
-| `POST /api/pick/check` | `+ drawn, payouts?` → `{total, histogram, entries:[{histogram}], payout?}` |
-| `POST /api/pick/check-lines` | `+ drawn, minHits, exact` → `{id, total}` |
-| `POST /api/pick/position` | `{game, lines:["1 2 3 4 5 6"], pool?}` → `{total, rows:[{line, rank}]}` |
+| `POST /api/pick/check` | `+ drawn, drawnBonus?, payouts?` → `{total, histogram, grid?, entries:[{histogram, grid?}], payout?}` -- `payouts[h]` or `payouts[h][s]` |
+| `POST /api/pick/check-lines` | `+ drawn, drawnBonus?, minHits, exact, minBonus?` → `{id, total}` |
+| `POST /api/pick/position` | `{game, lines:["1 2 3 4 5 6"], pool?, bonusPool?}` → `{total, rows:[{line, rank}]}` (bonus after `|`) |
+| `POST /api/pick/analysis` | `{game, entries, entry}` (a System entry) → `{total, oddEven, lastDigit}` |
+| `POST /api/pick/frequency` | `{game, entries}` → `{total, main:[{number, count}], bonus}` |
+| `POST /api/pick/parse` | `{text}` → `{game, entries, prizes}` (game language; errors name the line) |
+| `POST /api/pick/text` | `{game, entries, prizes?}` → `{text}` |
 
 ```json
 {

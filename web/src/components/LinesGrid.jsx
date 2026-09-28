@@ -81,7 +81,7 @@ export default function LinesGrid({ id, total, name = "wheellab", hits }) {
               return (
                 <tr key={i}>
                   <td className="muted">{fmt(page * PAGE + i + 1)}</td>
-                  <td>{line.map((s, j) => <span key={j} className={marks?.[j] ? "chip hit" : "chip"}>{s}</span>)}</td>
+                  <td>{line.map((s, j) => <span key={j} className={`chip${String(s).startsWith("+") ? " bonus" : ""}${marks?.[j] ? " hit" : ""}`}>{s}</span>)}</td>
                   {marks && <td><strong>{marks.filter(Boolean).length}/{line.length}</strong></td>}
                 </tr>
               );

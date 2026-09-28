@@ -136,3 +136,7 @@ th { font-size: 13px; color: var(--muted); font-weight: 600; }
 .entry-list li { margin: 4px 0; }
 .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 @media (max-width: 700px) { .two-col { grid-template-columns: 1fr; } }
+.chip.bonus { background: var(--accent-soft); color: var(--accent); }
+.chip.bonus.hit { background: var(--hit); color: var(--hit-text); }
+textarea.code { width: 100%; font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: 8px; padding: 8px; }
+pre.error { white-space: pre-wrap; font-size: 13px; }

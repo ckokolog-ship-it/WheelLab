@@ -50,6 +50,11 @@ P(h) = C(k, h) · C(N − k, d − h) / C(N, d)
 with *N* numbers, *k* numbers per line and *d* drawn. LOTTO 6 of 49: 6 hits = 1 in 13,983,816. KENO 5 spots:
 5 hits = 1 in 1,551. With prizes set in Check, the expected prize per line is shown too.
 
+## Analysis
+
+For a System entry: how many of its lines have 0, 1, … odd numbers and 0, 1, … numbers ending in each digit;
+and, for the whole slip, in how many lines every number appears. See [my-games.md](my-games.md#analysis).
+
 ## Position
 
 Where a line is among all lines of the game (or of a system on your numbers), in lexicographic order: in

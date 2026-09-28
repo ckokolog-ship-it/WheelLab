@@ -31,6 +31,13 @@ export const matchxCheckLines = (body, result, minHits, exact) =>
 // Number games (LOTTO, KENO): {game: {numbers, pick, draw}, entries: [...]}
 export const pickCount = (body) => post("/api/pick/count", body);
 export const pickBuild = (body) => post("/api/pick/build", body);
-export const pickCheck = (body, drawn, payouts) => post("/api/pick/check", { ...body, drawn, ...(payouts ? { payouts } : {}) });
-export const pickCheckLines = (body, drawn, minHits, exact) => post("/api/pick/check-lines", { ...body, drawn, minHits, exact });
-export const pickPosition = (game, lines, pool) => post("/api/pick/position", { game, lines, ...(pool?.length ? { pool } : {}) });
+export const pickCheck = (body, drawn, drawnBonus, payouts) =>
+  post("/api/pick/check", { ...body, drawn, drawnBonus, ...(payouts ? { payouts } : {}) });
+export const pickCheckLines = (body, drawn, drawnBonus, minHits, exact, minBonus) =>
+  post("/api/pick/check-lines", { ...body, drawn, drawnBonus, minHits, exact, minBonus });
+export const pickPosition = (game, lines, pool, bonusPool) =>
+  post("/api/pick/position", { game, lines, ...(pool?.length ? { pool } : {}), ...(bonusPool?.length ? { bonusPool } : {}) });
+export const pickAnalysis = (body, entry) => post("/api/pick/analysis", { ...body, entry });
+export const pickFrequency = (body) => post("/api/pick/frequency", body);
+export const pickParse = (text) => post("/api/pick/parse", { text });
+export const pickText = (body) => post("/api/pick/text", body);

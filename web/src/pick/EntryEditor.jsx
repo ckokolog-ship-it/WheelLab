@@ -10,18 +10,28 @@ export const ENTRY_TYPES = [
 
 const LETTERS = "ABCDEFGHIJ";
 
-/** "System of 8: 1 2 3 …" */
+/** "System of 8: 1 2 3 … | 4 9" */
 export function describeEntry(e) {
+  const bonus = e.bonus?.length ? ` | ${e.bonus.join(" ")}` : "";
   switch (e.type) {
-    case "single": return `Single: ${e.numbers.join(" ")}`;
-    case "system": return `System of ${e.numbers.length}: ${e.numbers.join(" ")}`;
-    case "wheel": return `Wheel of ${e.numbers.length}, guarantee ${e.guarantee}: ${e.numbers.join(" ")}`;
-    default: return `Groups ${e.groups.map((g, i) => `${LETTERS[i]}(${e.take[i]} of ${g.length}: ${g.join(" ")})`).join(" × ")}`;
+    case "single": return `Single: ${e.numbers.join(" ")}${bonus}`;
+    case "system": return `System of ${e.numbers.length}: ${e.numbers.join(" ")}${bonus}`;
+    case "wheel": return `Wheel of ${e.numbers.length}, guarantee ${e.guarantee}: ${e.numbers.join(" ")}${bonus}`;
+    default: return `Groups ${e.groups.map((g, i) => `${LETTERS[i]}(${e.take[i]} of ${g.length}: ${g.join(" ")})`).join(" × ")}${bonus}`;
   }
 }
 
 /** Draft of a new entry -> the entry for the server, or an error message. */
-function draftEntry(type, numbers, groups, guarantee, k) {
+function draftEntry(type, numbers, groups, guarantee, k, game, bonus) {
+  const e = mainDraft(type, numbers, groups, guarantee, k);
+  if (typeof e === "string" || !game.bonus) return e;
+  const bp = game.bonus.pick;
+  if (type === "system" ? bonus.length < bp : bonus.length !== bp)
+    return `${game.bonus.label}: choose ${type === "system" ? "at least" : "exactly"} ${bp}.`;
+  return { ...e, bonus };
+}
+
+function mainDraft(type, numbers, groups, guarantee, k) {
   if (type === "single") return numbers.length === k ? { type, numbers } : `Pick exactly ${k} numbers.`;
   if (type === "system") return numbers.length >= k ? { type, numbers } : `Pick at least ${k} numbers.`;
   if (type === "wheel") return numbers.length > k ? { type, numbers, guarantee: Number(guarantee) } : `Pick more than ${k} numbers.`;
@@ -37,13 +47,16 @@ export default function EntryEditor({ game, onAdd }) {
   const [numbers, setNumbers] = useState([]);
   const [groups, setGroups] = useState([{ numbers: [], take: 1 }]);
   const [guarantee, setGuarantee] = useState(Math.min(3, k));
-  const draft = draftEntry(type, numbers, groups, guarantee, k);
+  const [bonus, setBonus] = useState([]);
+  const draft = draftEntry(type, numbers, groups, guarantee, k, game, bonus);
+  const min = game.min ?? 1, max = game.max ?? game.numbers;
   const help = ENTRY_TYPES.find((t) => t.id === type).help;
 
   function add() {
     if (typeof draft === "string") return;
     onAdd(draft);
     setNumbers([]);
+    setBonus([]);
     setGroups([{ numbers: [], take: 1 }]);
   }
 
@@ -59,7 +72,7 @@ export default function EntryEditor({ game, onAdd }) {
 
       {type !== "groups" ? (
         <>
-          <NumberPad max={game.numbers} selected={numbers} onChange={setNumbers}
+          <NumberPad min={min} max={max} selected={numbers} onChange={setNumbers}
             limit={type === "single" ? k : undefined} randomCount={type === "single" ? k : k + 2} />
           {type === "wheel" && (
             <label className="row small" style={{ marginTop: 8 }}>
@@ -84,7 +97,7 @@ export default function EntryEditor({ game, onAdd }) {
                   {groups.length > 1 && <button className="icon" aria-label={`Remove group ${LETTERS[i]}`} onClick={() => setGroups(groups.filter((_, j) => j !== i))}>✕</button>}
                 </div>
               </div>
-              <NumberPad max={game.numbers} selected={g.numbers} label={`Group ${LETTERS[i]} number`}
+              <NumberPad min={min} max={max} selected={g.numbers} label={`Group ${LETTERS[i]} number`}
                 blocked={groups.flatMap((o, j) => (j === i ? [] : o.numbers))}
                 onChange={(nums) => setGroups(groups.map((x, j) => (j === i ? { ...x, numbers: nums } : x)))} randomCount={Number(g.take) + 1} />
             </div>
@@ -93,6 +106,14 @@ export default function EntryEditor({ game, onAdd }) {
             <button className="pill" style={{ marginTop: 8 }} onClick={() => setGroups([...groups, { numbers: [], take: 1 }])}>+ Group</button>
           )}
         </>
+      )}
+      {game.bonus && (
+        <div style={{ marginTop: 12 }}>
+          <h3>{game.bonus.label} <span className="muted small" style={{ fontWeight: 400 }}>
+            {type === "system" ? `${game.bonus.pick} or more -- every combination of ${game.bonus.pick}` : `exactly ${game.bonus.pick}`}</span></h3>
+          <NumberPad min={game.bonus.min} max={game.bonus.max} selected={bonus} onChange={setBonus} label={game.bonus.label}
+            limit={type === "system" ? undefined : game.bonus.pick} randomCount={game.bonus.pick} />
+        </div>
       )}
       <div className="row" style={{ marginTop: 10 }}>
         <button onClick={add} disabled={typeof draft === "string"}>+ Add entry</button>

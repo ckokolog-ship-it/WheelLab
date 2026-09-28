@@ -51,14 +51,13 @@ class PickBruteForceTest {
         }
     }
 
-    private static List<List<Integer>> lines(Entry e) {
-        LineSource<String> src = e.lines();
+    private static List<List<Integer>> lines(MainPart e) {
         List<List<Integer>> out = new ArrayList<>();
-        for (long i = 0; i < src.size(); i++) out.add(src.get(i).stream().map(Integer::parseInt).toList());
+        for (long i = 0; i < e.count(); i++) out.add(e.line(i));
         return out;
     }
 
-    private static void assertMatches(Entry e, PickGame game, List<List<Integer>> expected) {
+    private static void assertMatches(MainPart e, PickGame game, List<List<Integer>> expected) {
         List<List<Integer>> got = lines(e);
         assertEquals(expected.size(), e.count(), e.type() + " count");
         assertEquals(new HashSet<>(expected), new HashSet<>(got), e.type() + " lines");
@@ -69,11 +68,14 @@ class PickBruteForceTest {
             assertEquals(s, l, "lines are sorted");
         }
         for (int t = 0; t < 4; t++) {
-            Set<Integer> drawn = new HashSet<>(sample(numbers(game.numbers()), game.draw()));
+            Set<Integer> drawn = new HashSet<>(sample(numbers(game.max()), game.draw()));
             long[] hist = new long[game.pick() + 1];
             for (List<Integer> l : expected) hist[(int) l.stream().filter(drawn::contains).count()]++;
             assertArrayEquals(hist, e.histogram(drawn), e.type() + " histogram");
         }
+        long[] freq = new long[game.size()];
+        for (List<Integer> l : expected) for (int n : l) freq[n - game.min()]++;
+        assertArrayEquals(freq, e.frequency(), e.type() + " frequency");
     }
 
     private static PickGame randomGame() {
@@ -86,10 +88,10 @@ class PickBruteForceTest {
     void systems() {
         for (int it = 0; it < 30; it++) {
             PickGame game = randomGame();
-            List<Integer> pool = sample(numbers(game.numbers()), game.pick() + RND.nextInt(4));
-            assertMatches(new Entries.Pool(game, pool), game, subsets(pool, game.pick()));
-            List<Integer> single = sample(numbers(game.numbers()), game.pick());
-            assertMatches(new Entries.Single(game, single), game, subsets(single, game.pick()));
+            List<Integer> pool = sample(numbers(game.max()), game.pick() + RND.nextInt(4));
+            assertMatches(new Parts.Pool(game, pool), game, subsets(pool, game.pick()));
+            List<Integer> single = sample(numbers(game.max()), game.pick());
+            assertMatches(new Parts.Single(game, single), game, subsets(single, game.pick()));
         }
     }
 
@@ -97,7 +99,7 @@ class PickBruteForceTest {
     void groups() {
         for (int it = 0; it < 30; it++) {
             PickGame game = randomGame();
-            List<Integer> all = sample(numbers(game.numbers()), game.numbers());
+            List<Integer> all = sample(numbers(game.max()), game.max());
             List<List<Integer>> groups = new ArrayList<>();
             List<Integer> take = new ArrayList<>();
             int left = game.pick(), at = 0;
@@ -122,7 +124,7 @@ class PickBruteForceTest {
                     }
                 expected = next;
             }
-            assertMatches(new Entries.Groups(game, groups, take), game, expected);
+            assertMatches(new Parts.Groups(game, groups, take), game, expected);
         }
     }
 
@@ -130,9 +132,9 @@ class PickBruteForceTest {
     void wheelKeepsItsGuarantee() {
         for (int it = 0; it < 25; it++) {
             PickGame game = randomGame();
-            List<Integer> pool = sample(numbers(game.numbers()), Math.min(game.numbers(), game.pick() + 1 + RND.nextInt(6)));
+            List<Integer> pool = sample(numbers(game.max()), Math.min(game.max(), game.pick() + 1 + RND.nextInt(6)));
             int t = 1 + RND.nextInt(game.pick());
-            Entries.Wheel w = new Entries.Wheel(game, pool, t);
+            Parts.Wheel w = new Parts.Wheel(game, pool, t);
             List<List<Integer>> got = lines(w);
             assertEquals(got.size(), new HashSet<>(got).size(), "no duplicate lines");
             for (List<Integer> l : got) assertTrue(pool.containsAll(l) && l.size() == game.pick());
@@ -141,7 +143,7 @@ class PickBruteForceTest {
                 assertTrue(covered, "subset " + s + " is not in any line");
             }
             assertTrue(got.size() <= Combinatorics.binomial(pool.size(), game.pick()));
-            assertEquals(got, lines(new Entries.Wheel(game, pool, t)), "same input, same lines");
+            assertEquals(got, lines(new Parts.Wheel(game, pool, t)), "same input, same lines");
         }
     }
 
@@ -157,13 +159,61 @@ class PickBruteForceTest {
         assertEquals(13_983_815, Combinatorics.rank(49, new int[]{43, 44, 45, 46, 47, 48}));
     }
 
+    /** Entries with a bonus pool: lines (main then +bonus), 2-D hit grid and bonus frequency. */
+    @Test
+    void bonusPool() {
+        for (int it = 0; it < 30; it++) {
+            int bmax = 4 + RND.nextInt(8), bp = 1 + RND.nextInt(2);
+            PickGame game = new PickGame("Test", 0, 15 + RND.nextInt(10), 2 + RND.nextInt(3), 3, new PickGame.Bonus("Star", 1, bmax, bp, bp));
+            List<Integer> mains = new ArrayList<>();
+            for (int n = game.min(); n <= game.max(); n++) mains.add(n);
+            boolean system = RND.nextBoolean();
+            MainPart part = system ? new Parts.Pool(game, sample(mains, game.pick() + RND.nextInt(3))) : new Parts.Single(game, sample(mains, game.pick()));
+            List<Integer> bonus = sample(numbers(bmax), system ? bp + RND.nextInt(bmax - bp + 1) : bp);
+            Entry e = new Entry(game, part, bonus);
+            List<List<String>> expected = new ArrayList<>();
+            for (List<Integer> m : lines(part))
+                for (List<Integer> b : subsets(bonus, bp)) {
+                    List<String> l = new ArrayList<>();
+                    m.forEach(x -> l.add(String.valueOf(x)));
+                    b.forEach(x -> l.add("+" + x));
+                    expected.add(l);
+                }
+            LineSource<String> src = e.lines();
+            List<List<String>> got = new ArrayList<>();
+            for (long i = 0; i < src.size(); i++) got.add(src.get(i));
+            assertEquals(expected, got, "lines, main slowest");
+            Set<Integer> drawn = new HashSet<>(sample(mains, game.draw()));
+            Set<Integer> drawnBonus = new HashSet<>(sample(numbers(bmax), bp));
+            long[][] grid = new long[game.pick() + 1][bp + 1];
+            long[] bf = new long[bmax];
+            for (List<String> l : expected) {
+                int h = 0, s = 0;
+                for (String x : l) {
+                    if (x.startsWith("+")) {
+                        int n = Integer.parseInt(x.substring(1));
+                        bf[n - 1]++;
+                        if (drawnBonus.contains(n)) s++;
+                    } else if (drawn.contains(Integer.parseInt(x))) h++;
+                }
+                grid[h][s]++;
+            }
+            long[][] g = e.histogram(drawn, drawnBonus);
+            for (int h = 0; h <= game.pick(); h++) assertArrayEquals(grid[h], g[h], "grid row " + h);
+            assertArrayEquals(bf, e.bonusFrequency(), "bonus frequency");
+        }
+        PickGame g = new PickGame("T", 1, 35, 5, 5, new PickGame.Bonus("Star", 1, 12, 2, 2));
+        assertThrows(IllegalArgumentException.class, () -> new Entry(g, new Parts.Single(g, List.of(1, 2, 3, 4, 5)), List.of(1)));
+        assertThrows(IllegalArgumentException.class, () -> new Entry(new PickGame(49, 6, 6), new Parts.Single(new PickGame(49, 6, 6), List.of(1, 2, 3, 4, 5, 6)), List.of(1)));
+    }
+
     @Test
     void clearErrors() {
         PickGame lotto = new PickGame(49, 6, 6);
-        assertThrows(IllegalArgumentException.class, () -> new Entries.Single(lotto, List.of(1, 2, 3)));
-        assertThrows(IllegalArgumentException.class, () -> new Entries.Pool(lotto, List.of(1, 2, 3, 4, 5, 50)));
+        assertThrows(IllegalArgumentException.class, () -> new Parts.Single(lotto, List.of(1, 2, 3)));
+        assertThrows(IllegalArgumentException.class, () -> new Parts.Pool(lotto, List.of(1, 2, 3, 4, 5, 50)));
         IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
-                () -> new Entries.Groups(lotto, List.of(List.of(1, 2, 3), List.of(3, 4, 5, 6)), List.of(2, 4)));
+                () -> new Parts.Groups(lotto, List.of(List.of(1, 2, 3), List.of(3, 4, 5, 6)), List.of(2, 4)));
         assertTrue(e.getMessage().contains("two groups"), e.getMessage());
     }
 }

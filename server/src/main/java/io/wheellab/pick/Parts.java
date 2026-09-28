@@ -2,7 +2,6 @@ package io.wheellab.pick;
 
 import io.wheellab.core.Checks;
 import io.wheellab.core.Combinatorics;
-import io.wheellab.core.LineSource;
 import io.wheellab.core.Histograms;
 
 import java.util.ArrayList;
@@ -11,10 +10,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-/** The entry types of a number-game slip. */
-public final class Entries {
+/** The main parts of number-game entries: single line, system, groups and wheel. */
+public final class Parts {
 
-    private Entries() {
+    private Parts() {
     }
 
     /** Distinct game numbers, sorted. */
@@ -29,12 +28,12 @@ public final class Entries {
     }
 
     /** One line of exactly {@code pick} numbers. */
-    public static final class Single extends Entry {
+    public static final class Single extends MainPart {
         private final List<Integer> numbers;
 
         public Single(PickGame game, List<Integer> raw) {
             super(game);
-            numbers = Entries.numbers(game, raw, "Single line");
+            numbers = Parts.numbers(game, raw, "Single line");
             Checks.that(numbers.size() == game.pick(), "Single line: exactly " + game.pick() + " numbers.");
         }
 
@@ -49,8 +48,16 @@ public final class Entries {
         }
 
         @Override
-        public LineSource<String> lines() {
-            return LineSource.of(List.of(text(numbers)));
+        public List<Integer> line(long index) {
+            Checks.index(index, 1);
+            return numbers;
+        }
+
+        @Override
+        public long[] frequency() {
+            long[] f = new long[game.size()];
+            for (int n : numbers) f[n - game.min()] = 1;
+            return f;
         }
 
         @Override
@@ -62,12 +69,12 @@ public final class Entries {
     }
 
     /** Full system: every combination of {@code pick} numbers from the chosen pool. */
-    public static final class Pool extends Entry {
+    public static final class Pool extends MainPart {
         private final List<Integer> pool;
 
         public Pool(PickGame game, List<Integer> raw) {
             super(game);
-            pool = Entries.numbers(game, raw, "System");
+            pool = Parts.numbers(game, raw, "System");
             Checks.that(pool.size() >= game.pick(), "System: at least " + game.pick() + " numbers.");
         }
 
@@ -86,20 +93,18 @@ public final class Entries {
         }
 
         @Override
-        public LineSource<String> lines() {
-            long total = count();
-            return new LineSource<>() {
-                @Override
-                public long size() {
-                    return total;
-                }
+        public List<Integer> line(long index) {
+            Checks.index(index, count());
+            return Combinatorics.combinationAt(pool, game.pick(), index);
+        }
 
-                @Override
-                public List<String> get(long index) {
-                    Checks.index(index, total);
-                    return text(Combinatorics.combinationAt(pool, game.pick(), index));
-                }
-            };
+        /** Every pool number is in C(v - 1, k - 1) lines. */
+        @Override
+        public long[] frequency() {
+            long[] f = new long[game.size()];
+            long each = Combinatorics.binomial(pool.size() - 1, game.pick() - 1);
+            for (int n : pool) f[n - game.min()] = each;
+            return f;
         }
 
         /** Closed form: C(a, h) × C(b, k - h), a = pool numbers drawn, b = the others. */
@@ -113,7 +118,7 @@ public final class Entries {
     }
 
     /** Groups ("A x B"): {@code take[i]} numbers from group i, every combination; groups share no number. */
-    public static final class Groups extends Entry {
+    public static final class Groups extends MainPart {
         private final List<List<Integer>> groups;
         private final int[] take;
         private final long[] sizes;
@@ -129,7 +134,7 @@ public final class Entries {
             int sum = 0;
             for (int i = 0; i < raw.size(); i++) {
                 String name = "Group " + (char) ('A' + i);
-                List<Integer> g = Entries.numbers(game, raw.get(i), name);
+                List<Integer> g = Parts.numbers(game, raw.get(i), name);
                 for (int n : g) Checks.that(seen.add(n), "Groups: " + n + " is in two groups -- a number belongs to one group only.");
                 take[i] = takeRaw.get(i);
                 Checks.that(take[i] >= 1 && take[i] <= g.size(), name + ": take 1 to " + g.size() + " numbers.");
@@ -153,27 +158,29 @@ public final class Entries {
         }
 
         @Override
-        public LineSource<String> lines() {
-            long total = count();
-            return new LineSource<>() {
-                @Override
-                public long size() {
-                    return total;
-                }
+        public List<Integer> line(long index) {
+            Checks.index(index, count());
+            List<Integer> line = new ArrayList<>();
+            long rest = index;
+            for (int i = groups.size() - 1; i >= 0; i--) { // the last group changes fastest
+                line.addAll(Combinatorics.combinationAt(groups.get(i), take[i], rest % sizes[i]));
+                rest /= sizes[i];
+            }
+            line.sort(null);
+            return line;
+        }
 
-                @Override
-                public List<String> get(long index) {
-                    Checks.index(index, total);
-                    List<Integer> line = new ArrayList<>();
-                    long rest = index;
-                    for (int i = groups.size() - 1; i >= 0; i--) { // the last group changes fastest
-                        line.addAll(Combinatorics.combinationAt(groups.get(i), take[i], rest % sizes[i]));
-                        rest /= sizes[i];
-                    }
-                    line.sort(null);
-                    return text(line);
-                }
-            };
+        /** A number of group i is in C(g_i - 1, t_i - 1) x (the other groups' combinations) lines. */
+        @Override
+        public long[] frequency() {
+            long[] f = new long[game.size()];
+            for (int i = 0; i < groups.size(); i++) {
+                long others = 1;
+                for (int j = 0; j < groups.size(); j++) if (j != i) others = Math.multiplyExact(others, sizes[j]);
+                long each = Math.multiplyExact(Combinatorics.binomial(groups.get(i).size() - 1, take[i] - 1), others);
+                for (int n : groups.get(i)) f[n - game.min()] = each;
+            }
+            return f;
         }
 
         @Override
@@ -190,14 +197,14 @@ public final class Entries {
     }
 
     /** Wheel: a reduced system on the chosen pool -- see {@link WheelGenerator}. */
-    public static final class Wheel extends Entry {
+    public static final class Wheel extends MainPart {
         private final List<Integer> pool;
         private final int guarantee;
         private final List<List<Integer>> rows;
 
         public Wheel(PickGame game, List<Integer> raw, int guarantee) {
             super(game);
-            pool = Entries.numbers(game, raw, "Wheel");
+            pool = Parts.numbers(game, raw, "Wheel");
             Checks.that(pool.size() >= game.pick(), "Wheel: at least " + game.pick() + " numbers.");
             this.guarantee = guarantee;
             rows = WheelGenerator.generate(pool, game.pick(), guarantee);
@@ -218,8 +225,20 @@ public final class Entries {
         }
 
         @Override
-        public LineSource<String> lines() {
-            return LineSource.of(rows.stream().map(Entry::text).toList());
+        public List<Integer> line(long index) {
+            Checks.index(index, rows.size());
+            return rows.get((int) index);
+        }
+
+        public List<Integer> pool() {
+            return pool;
+        }
+
+        @Override
+        public long[] frequency() {
+            long[] f = new long[game.size()];
+            for (List<Integer> r : rows) for (int n : r) f[n - game.min()]++;
+            return f;
         }
 
         @Override

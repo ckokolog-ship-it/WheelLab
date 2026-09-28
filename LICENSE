@@ -10,7 +10,9 @@ Copyright (c) 2026 ckokolog-ship-it. All rights reserved.
    (b) distribute, publish, sell, rent, sublicense, or otherwise transfer it to third parties;
    (c) offer it to third parties as a service (for example a website or an API);
    (d) remove or alter this license or any copyright notice.
-   Viewing the source code where it is published does not grant any right of use.
+   Viewing the source code where it is published does not grant any right of use. Where the repository
+   is public on GitHub, GitHub's Terms of Service let GitHub users view and fork it on GitHub; that grants
+   no other right.
 
 3. No warranty. The software is provided "as is", without warranty of any kind, express or implied,
    including fitness for a particular purpose, accuracy, or freedom from errors. The Owner is not liable

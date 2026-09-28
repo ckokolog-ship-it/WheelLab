@@ -19,13 +19,19 @@ digit, frequencies) and find the **position** of any line.
 
 ## Quick start
 
-Requirements: Java 17+, Maven 3.9+, Node.js 20+.
+Requirements: **Java 17+** and **Node.js 20+**. Maven is not needed -- the Maven Wrapper (`mvnw`) downloads
+it the first time.
 
 ```bash
-cd web && npm install && npm run build
-cd ../server && mvn package
-java -jar target/wheellab-server.jar --web ../web/dist      # open http://localhost:8090
+git clone https://github.com/ckokolog-ship-it/WheelLab.git
+cd WheelLab/web && npm install && npm run build
+cd ../server && ./mvnw package                               # Windows: .\mvnw.cmd package
+java -jar target/wheellab-server.jar --web ../web/dist       # open http://localhost:8090
 ```
+
+On Windows 11 the requirements install with
+`winget install EclipseAdoptium.Temurin.17.JDK OpenJS.NodeJS.LTS Git.Git` -- then open a new terminal. See
+[docs/install-windows.md](docs/install-windows.md) for a step-by-step guide.
 
 For development, run the server (`java -jar target/wheellab-server.jar`, API on port 8090) and the web app
 with hot reload (`cd web && npm run dev`, http://localhost:5173 -- `/api` is proxied to the server).
@@ -50,7 +56,7 @@ Every count, line and hit table is checked against an independent brute force --
 written separately in Python. CI runs all of them on every pull request.
 
 ```bash
-cd server && mvn verify
+cd server && ./mvnw verify
 python3 tools/verify/verify_matchx.py --url http://localhost:8090
 python3 tools/verify/verify_pick.py --url http://localhost:8090
 ```

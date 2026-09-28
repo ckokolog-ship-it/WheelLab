@@ -11,6 +11,9 @@ Included in `wheellab-server.jar`:
 |---|---|---|
 | [Gson](https://github.com/google/gson) (`com.google.code.gson:gson`) | 2.10.1 | Apache License 2.0 |
 
+Used only to build (not included): the [Maven Wrapper](https://maven.apache.org/wrapper/) scripts
+`server/mvnw` and `server/mvnw.cmd` (Apache License 2.0), which download Apache Maven (Apache License 2.0).
+
 Used only by the tests (not included):
 
 | Library | Version | License |

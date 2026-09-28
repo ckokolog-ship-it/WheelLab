@@ -1,0 +1,4 @@
+# Keep the Maven Wrapper scripts runnable on every system.
+server/mvnw        text eol=lf
+server/mvnw.cmd    text eol=crlf
+*.sh               text eol=lf

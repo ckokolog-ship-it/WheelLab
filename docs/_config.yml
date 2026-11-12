@@ -1,0 +1,23 @@
+# GitHub Pages: Settings -> Pages -> "Deploy from a branch", branch main, folder /docs.
+# The guides of this folder become the site: https://ckokolog-ship-it.github.io/WheelLab/
+title: WheelLab
+description: >-
+  Build and check full, reduced and custom systems for match-result predictions (1X2, Under/Over,
+  GG/NG), LOTTO, KENO and your own number games, with exact counts, odds and hit statistics.
+url: https://ckokolog-ship-it.github.io
+baseurl: /WheelLab
+theme: jekyll-theme-cayman
+plugins:
+  - jekyll-sitemap
+  - jekyll-seo-tag
+  - jekyll-relative-links
+  - jekyll-optional-front-matter
+  - jekyll-titles-from-headings
+relative_links:
+  enabled: true
+  collections: false
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: default

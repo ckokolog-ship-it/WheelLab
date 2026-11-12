@@ -6,6 +6,10 @@ Build and check **full, reduced and custom systems** for match-result prediction
 exact counts and hit statistics for systems of any size, without generating a single line until you ask to
 see them.
 
+**Website and guides:** <https://ckokolog-ship-it.github.io/WheelLab/>
+
+![WheelLab: a MatchX ticket](docs/images/matchx.png)
+
 | Game | What you do |
 |---|---|
 | **MatchX** | predict up to 20 matches (1 X 2, Under/Over, GG/NG) with Full, Errors, Ranges and Covering systems |

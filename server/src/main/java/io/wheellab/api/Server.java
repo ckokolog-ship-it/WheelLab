@@ -25,14 +25,14 @@ import java.util.function.Function;
 /**
  * WheelLab HTTP server: the JSON API under {@code /api/} and, optionally, the built web app.
  * <pre>
- *   java -jar wheellab-server.jar [--port 8090] [--web ../web/dist]
+ *   java -jar wheellab-server.jar [--port 8200] [--web ../web/dist]
  * </pre>
  * The port can also come from the {@code WHEELLAB_PORT} environment variable. The server keeps no user
  * data: every request carries the whole ticket.
  */
 public final class Server {
 
-    static final int DEFAULT_PORT = 8090;
+    static final int DEFAULT_PORT = 8200;
     static final int MAX_BODY = 4 * 1024 * 1024;
     static final int MAX_PAGE = 1000;
 

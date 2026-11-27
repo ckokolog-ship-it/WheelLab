@@ -30,14 +30,14 @@ it the first time.
 git clone https://github.com/ckokolog-ship-it/WheelLab.git
 cd WheelLab/web && npm install && npm run build
 cd ../server && ./mvnw package                               # Windows: .\mvnw.cmd package
-java -jar target/wheellab-server.jar --web ../web/dist       # open http://localhost:8090
+java -jar target/wheellab-server.jar --web ../web/dist       # open http://localhost:8200
 ```
 
 On Windows 11 the requirements install with
 `winget install EclipseAdoptium.Temurin.17.JDK OpenJS.NodeJS.LTS Git.Git` -- then open a new terminal. See
 [docs/install-windows.md](docs/install-windows.md) for a step-by-step guide.
 
-For development, run the server (`java -jar target/wheellab-server.jar`, API on port 8090) and the web app
+For development, run the server (`java -jar target/wheellab-server.jar`, API on port 8200) and the web app
 with hot reload (`cd web && npm run dev`, http://localhost:5173 -- `/api` is proxied to the server).
 
 Server options: `--port N` (or `WHEELLAB_PORT`), `--web DIR`. The server keeps no user data; the web app
@@ -61,8 +61,8 @@ written separately in Python. CI runs all of them on every pull request.
 
 ```bash
 cd server && ./mvnw verify
-python3 tools/verify/verify_matchx.py --url http://localhost:8090
-python3 tools/verify/verify_pick.py --url http://localhost:8090
+python3 tools/verify/verify_matchx.py --url http://localhost:8200
+python3 tools/verify/verify_pick.py --url http://localhost:8200
 ```
 
 ## Project layout

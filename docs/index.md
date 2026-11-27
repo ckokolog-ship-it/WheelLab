@@ -58,7 +58,7 @@ Requirements: **Java 17+** and **Node.js 20+** (Maven is not needed: the Maven W
 git clone https://github.com/ckokolog-ship-it/WheelLab.git
 cd WheelLab/web && npm install && npm run build
 cd ../server && ./mvnw package                               # Windows: .\mvnw.cmd package
-java -jar target/wheellab-server.jar --web ../web/dist       # open http://localhost:8090
+java -jar target/wheellab-server.jar --web ../web/dist       # open http://localhost:8200
 ```
 
 ## Verified

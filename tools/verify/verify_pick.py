@@ -12,7 +12,7 @@ independent brute force here (itertools):
     prizes per (main, bonus) hits, odd/even and last-digit analyses, number frequencies, and the game
     language (text -> game -> the same text)
 
-Usage: python3 tools/verify/verify_pick.py [--url http://localhost:8090] [--rounds 50]
+Usage: python3 tools/verify/verify_pick.py [--url http://localhost:8200] [--rounds 50]
 """
 import argparse
 import itertools
@@ -142,7 +142,7 @@ def bonus_rounds(base, rnd, check, rounds):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--url", default="http://localhost:8090")
+    ap.add_argument("--url", default="http://localhost:8200")
     ap.add_argument("--rounds", type=int, default=50)
     args = ap.parse_args()
     base = args.url.rstrip("/")

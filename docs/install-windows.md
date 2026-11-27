@@ -42,7 +42,7 @@ The first `.\mvnw.cmd` downloads Maven (about 10 MB) and the libraries; later bu
 java -jar target\wheellab-server.jar --web ..\web\dist
 ```
 
-Open **http://localhost:8090** in your browser. Stop the server with `Ctrl+C`. If Windows Firewall asks,
+Open **http://localhost:8200** in your browser. Stop the server with `Ctrl+C`. If Windows Firewall asks,
 you can deny network access -- the app only needs your own computer.
 
 ## Updating
@@ -67,5 +67,5 @@ PowerShell and check `mvn -v`. Then `mvn package` works the same as `.\mvnw.cmd 
 |---|---|
 | `mvnw.cmd` says JAVA_HOME is not set | set it: `setx JAVA_HOME "C:\Program Files\Eclipse Adoptium\jdk-17..."` (your JDK folder), then open a new PowerShell |
 | `.\mvnw.cmd` "cannot be loaded because running scripts is disabled" | run it from Command Prompt (`cmd`) instead, or `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` |
-| Port 8090 is in use | add `--port 9000` and open http://localhost:9000 |
+| Port 8200 is in use | add `--port 9000` and open http://localhost:9000 |
 | The page says it cannot reach the server | the server window must stay open while you use the app |

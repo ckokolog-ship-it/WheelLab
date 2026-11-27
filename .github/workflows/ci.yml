@@ -58,17 +58,17 @@ jobs:
         run: ./mvnw -B -ntp -DskipTests package
       - name: Start the server
         run: |
-          java -jar server/target/wheellab-server.jar --port 8090 > server.log 2>&1 &
+          java -jar server/target/wheellab-server.jar --port 8200 > server.log 2>&1 &
           for i in $(seq 1 30); do
-            curl -sf http://localhost:8090/api/health && exit 0
+            curl -sf http://localhost:8200/api/health && exit 0
             sleep 1
           done
           cat server.log
           exit 1
       - name: MatchX
-        run: python3 tools/verify/verify_matchx.py --url http://localhost:8090
+        run: python3 tools/verify/verify_matchx.py --url http://localhost:8200
       - name: LOTTO, KENO and My Games
-        run: python3 tools/verify/verify_pick.py --url http://localhost:8090
+        run: python3 tools/verify/verify_pick.py --url http://localhost:8200
       - name: Server log
         if: failure()
         run: cat server.log
